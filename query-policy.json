@@ -1,0 +1,9 @@
+{
+  "readOnly": true,
+  "allowedStatements": ["SELECT"],
+  "allowedDatabases": ["ProductAnalyticsDemo"],
+  "allowedTables": ["analytics.DailyFacts"],
+  "maxRows": 200,
+  "queryTimeoutMs": 10000,
+  "maxConcurrentQueries": 3
+}

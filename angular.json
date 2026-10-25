@@ -1,0 +1,62 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "analytics": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "client",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "dist/client",
+            "index": "client/index.html",
+            "browser": "client/main.ts",
+            "tsConfig": "tsconfig.app.json",
+            "styles": [
+              "client/styles.css"
+            ],
+            "assets": [
+              {
+                "input": "client",
+                "glob": "icon.svg",
+                "output": "/"
+              }
+            ]
+          },
+          "configurations": {
+            "production": {
+              "outputHashing": "all",
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "1mb",
+                  "maximumError": "2mb"
+                }
+              ],
+              "optimization": {
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                },
+                "scripts": true,
+                "fonts": false
+              }
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "buildTarget": "analytics:build",
+            "proxyConfig": "proxy.json",
+            "port": 4200
+          }
+        }
+      }
+    }
+  }
+}

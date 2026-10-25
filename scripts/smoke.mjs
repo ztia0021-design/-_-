@@ -1,0 +1,38 @@
+import {chromium} from '@playwright/test';
+import assert from 'node:assert/strict';
+import {mkdir} from 'node:fs/promises';
+const base='http://127.0.0.1:3000';
+const chat=async(body)=>{const response=await fetch(base+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:response.status,body:await response.json()}};
+const health=await(await fetch(base+'/api/health')).json();assert.equal(health.version,'2.0.0');
+const a=await chat({message:'最近 7 天新增用户趋势'});assert.equal(a.status,200);assert.equal(a.body.records.length,7);assert.equal(a.body.chart.type,'line');
+const b=await chat({message:'只看移动端',sessionId:a.body.sessionId});assert.equal(b.body.plan.days,7);assert.equal(b.body.plan.device,'mobile');
+assert.ok(b.body.records.reduce((s,r)=>s+r.value,0)<a.body.records.reduce((s,r)=>s+r.value,0));
+const c=await chat({message:'与前一期对比',sessionId:a.body.sessionId});assert.ok(c.body.comparison);assert.equal(c.body.comparison.window.end,c.body.evidence.start);
+const policy=await(await fetch(base+'/api/policy')).json();assert.equal(policy.readOnly,true);assert.deepEqual(policy.allowedStatements,['SELECT']);
+await mkdir('screenshots',{recursive:true});
+const browser=await chromium.launch({channel:'msedge',headless:true});
+try{
+ const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+ await page.goto(base);await page.getByRole('heading',{name:/每一个好问题/}).waitFor();
+ await page.getByRole('button',{name:/追踪增长趋势/}).click();await page.locator('.result-card').waitFor();
+ assert.equal(await page.locator('.trend svg').count(),1);
+ assert.match(await page.locator('.safety-strip').innerText(),/SELECT ONLY/);
+ await page.getByRole('button',{name:'按渠道拆分 ↗'}).last().click();
+ await page.waitForFunction(()=>document.querySelectorAll('.result-card').length===2);
+ assert.equal(await page.locator('.bars .bar-row').count(),4);
+ await page.locator('summary').filter({hasText:'SQL 安全检查'}).last().click();
+ assert.match(await page.locator('.evidence').last().innerText(),/只读/);
+ await page.screenshot({path:'screenshots/v2-analysis.png',fullPage:true});
+ await page.locator('summary').filter({hasText:'查看明细数据'}).last().click();
+ const dl=page.waitForEvent('download');await page.getByRole('button',{name:/导出 CSV/}).last().click();assert.equal((await dl).suggestedFilename(),'lens-analysis.csv');
+ await page.getByRole('button',{name:/连接设置/}).click();await page.getByRole('button',{name:'查看当前策略'}).click();
+ await page.waitForFunction(()=>document.querySelector('.settings-card pre')?.textContent?.includes('allowedDatabases'));
+ await page.screenshot({path:'screenshots/v2-policy.png',fullPage:true});
+ await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:/新建分析/}).click();
+ await page.getByRole('button',{name:/比较渠道表现/}).click();await page.locator('.result-card').waitFor();
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
+ await page.screenshot({path:'screenshots/v2-mobile.png',fullPage:true});
+ assert.deepEqual(errors,[]);
+ console.log('PASS: demo SQL, follow-ups, comparison, policy API, chart, security evidence, CSV export, mobile and settings; no browser errors.');
+}finally{await browser.close();}

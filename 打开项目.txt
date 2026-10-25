@@ -1,0 +1,12 @@
+Lens 第二版启动方式
+
+1. 关闭此前启动的旧版窗口。
+2. 双击 start.bat。
+3. 等待 Lens v2 running，浏览器打开 http://127.0.0.1:3000。
+
+默认：模拟数据 + 规则生成 SQL，同样经过安全校验。
+启用模型：复制 .env.example 为 .env，填写模型配置后重启。
+允许的库、表、语句与 readonly 策略在 query-policy.json。
+真实 SQL Server 配置与权限验收见 README.md。
+
+更改源代码后先执行 npm run build。

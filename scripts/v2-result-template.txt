@@ -1,0 +1,23 @@
+         <div class="result-card">
+          <div class="result-heading"><div><span class="overline">{{r.title}}</span><div class="big-value">{{r.chart.type==='metric'?cell(r.records[0]?.[r.chart.y]):r.records.length}}<small>{{r.chart.type==='metric'?r.chart.y:'行查询结果'}}</small></div></div><span class="result-badge">{{r.dataMode==='demo'?'模拟数据':'SQL Server'}}</span></div>
+          <div class="result-meta">{{r.evidence.start}} 至 {{r.evidence.end}}（不含） · UTC · {{device(r.plan.device)}}</div>
+          <div class="safety-strip">✓ SQL 校验通过 · SELECT ONLY · {{r.security.database}}<br><small>{{r.security.accountStatus}}</small></div>
+          <p class="chart-source">{{r.chartSource}} · {{r.chart.type}}</p>
+          @if(r.truncated){<p class="warning">返回行数已达上限，当前结果不是完整数据。</p>}
+          @if(r.userLimit){<p class="chart-source">SQL 包含 TOP 限定，仅展示指定数量记录。</p>}
+          @if(!r.noData && r.chart.type==='line'){
+           <div class="trend" role="img" aria-label="查询结果趋势图"><svg viewBox="0 0 660 160" preserveAspectRatio="none"><line x1="10" y1="140" x2="650" y2="140" stroke="#dce5e1"/><polyline [attr.points]="points(chartRows(r))" fill="none" stroke="#227653" stroke-width="3" vector-effect="non-scaling-stroke"/></svg><div class="axis"><span>{{chartRows(r)[0]?.label}}</span><span>{{chartRows(r)[r.records.length-1]?.label}}</span></div></div>
+          } @else if(!r.noData && r.chart.type==='bar'){
+           <div class="bars">@for(row of chartRows(r);track $index){<div class="bar-row"><span>{{row.label}}</span><div class="bar-track"><div [style.width.%]="width(row.value,chartRows(r))"></div></div><strong>{{number(row.value)}}</strong></div>}</div>
+          }
+          <details [open]="r.chart.type==='table'"><summary>查看明细数据 <span>{{r.records.length}} 行</span></summary><div class="table-wrap"><table><thead><tr>@for(c of r.columns;track c){<th>{{c}}</th>}</tr></thead><tbody>@for(row of r.records;track $index){<tr>@for(c of r.columns;track c){<td>{{cell(row[c])}}</td>}</tr>}</tbody></table></div><button class="text-button" (click)="download(r)">↓ 导出 CSV</button></details>
+          @if(r.comparison){<details><summary>前一期结果（{{r.comparison.window.start}} 至 {{r.comparison.window.end}}）</summary>@if(r.comparison.truncated){<p class="warning">前一期结果已截断。</p>}<div class="table-wrap"><table><thead><tr>@for(c of r.comparison.columns;track c){<th>{{c}}</th>}</tr></thead><tbody>@for(row of r.comparison.records;track $index){<tr>@for(c of r.comparison.columns;track c){<td>{{cell(row[c])}}</td>}</tr>}</tbody></table></div></details>}
+          <details class="evidence"><summary>◉ SQL 安全检查与查询依据</summary>
+           <dl><dt>定义</dt><dd>{{r.evidence.definition}}</dd><dt>来源</dt><dd>{{r.evidence.source}}</dd><dt>查询时间</dt><dd>{{r.evidence.queriedAt}}（不代表数据更新时间）</dd><dt>读取对象</dt><dd>{{r.security.database}}.{{r.security.table}}</dd><dt>只读</dt><dd>{{r.security.readOnly?'是，只允许 SELECT':'否'}}</dd></dl>
+           <ul>@for(check of r.security.checks;track check){<li>✓ {{check}}</li>}</ul>
+           <p>{{r.engine==='Text-to-SQL'?'模型生成的 SQL':'规则模式生成的 SQL'}}</p><pre>{{r.evidence.originalSql}}</pre>
+           <p>系统校验并重建后的 T-SQL（演示模式执行对应 SQLite SQL）</p><pre>{{r.evidence.sql}}</pre><p>参数</p><pre>{{json(r.evidence.parameters)}}</pre>
+           @if(r.evidence.comparison){<p>前一期参数</p><pre>{{json(r.evidence.comparison.parameters)}}</pre>}
+           <ul>@for(limit of r.evidence.limitations;track limit){<li>{{limit}}</li>}</ul><small>请求编号：{{r.requestId}}</small>
+          </details>
+         </div>
