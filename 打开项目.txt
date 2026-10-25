@@ -22,22 +22,12 @@
    npm run build
    npm start
 
-命令说明：
-- npm ci：根据 package-lock.json 安装锁定版本的依赖。
-- npm run build：编译 Angular 前端和 TypeScript 后端，生成 dist 目录。
-- npm start：启动编译后的服务。
-
-看到 “Lens v2 running at http://127.0.0.1:3000” 后，在浏览器打开：
+后，在浏览器打开：
    http://127.0.0.1:3000
 
 当前启动日志仍使用 Lens 名称，对应本项目“产品数据分析 Agent”。
-保持终端打开。按 Ctrl+C 停止服务。
 后续未修改源码时，只需运行 npm start；修改源码后应重新运行 npm run build。
 
-Windows 快捷启动：
-安装好 Node.js 后，也可以双击项目根目录中的 start.bat。
-脚本会在缺少 node_modules 时执行 npm ci，在缺少编译结果时执行 npm run build，然后启动服务。
-已有编译结果不会自动更新，修改源码后仍需手动重新编译。
 
 四、默认演示模式
 默认使用模拟电商数据和规则解析，不调用真实模型。
@@ -76,34 +66,13 @@ Windows 快捷启动：
 未配置密钥时使用规则模式；配置后调用失败会报错，不会用模拟模型响应冒充成功。
 
 六、可选：接入 SQL Server
-先阅读 README.md 中的数据库接入与权限说明。
 参考 sql/01-schema.sql、sql/02-permissions.sql 和 sql/03-verify-reader.sql，
 在目标环境准备数据表、受限读取账号并验收权限。
-随后在 .env 中配置 DATA_MODE=sqlserver、数据库连接信息及至少 24 字符的 APP_TOKEN。
+随后在 .env 中配置 DATA_MODE=sqlserver、数据库连接信息及APP_TOKEN。
 在页面连接设置中填写匹配的 APP_TOKEN。
 query-policy.json 中的允许数据库和表必须与实际配置一致。
-不要直接使用管理员或写入账号运行分析服务。真实 SQL Server 环境需单独完成集成验证。
 
-七、常见问题
-- 提示找不到 node 或 npm：确认安装 Node.js 24，并重新打开终端。
-- PowerShell 提示禁止运行 npm.ps1：可用 npm.cmd ci、npm.cmd run build、npm.cmd start，或使用命令提示符。
-- npm ci 失败：检查网络和错误信息，处理后重新执行，不要直接跳过依赖安装。
-- 提示找不到 dist/server/index.js：先运行 npm run build。
-- 提示端口被占用：关闭此前启动的项目服务，或在 .env 修改 PORT，重启后访问对应端口。
-- 浏览器无法连接：确认启动终端没有退出，且已经出现服务启动成功提示。
-- 模型或数据库报错：检查 .env 配置和终端日志，修改后重启。
-- SQL 被拦截：查看提示并调整问题。当前仅支持受限的单表 SELECT，不支持写入、跨库、JOIN 等操作。
-- OneDrive 等同步目录加载缓慢：可将项目解压到普通本地目录，再执行 npm ci 和 npm run build。
 
-八、开发与检查
-开发模式：
-   npm run dev
-前端通常访问 http://127.0.0.1:4200，后端使用 3000 端口。
-先停止已运行的生产服务，避免端口冲突。
 
-检查代码和运行测试：
-   npm run check
-   npm test
 
-GitHub 仓库仅提供源码和说明，不是已经部署的在线应用。
-127.0.0.1 只指向访问者自己的电脑，不能作为他人可访问的在线演示链接。
+
