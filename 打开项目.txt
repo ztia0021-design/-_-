@@ -1,12 +1,109 @@
-Lens 第二版启动方式
+产品数据分析 Agent 使用说明
 
-1. 关闭此前启动的旧版窗口。
-2. 双击 start.bat。
-3. 等待 Lens v2 running，浏览器打开 http://127.0.0.1:3000。
+一、准备运行环境
+1. 安装 Node.js 24（包含 npm）。安装后重新打开终端。
+2. 在终端运行以下命令，确认安装成功：
+   node -v
+   npm -v
+3. 首次安装依赖需要联网。默认演示模式不需要模型密钥，也不需要安装 SQL Server。
 
-默认：模拟数据 + 规则生成 SQL，同样经过安全校验。
-启用模型：复制 .env.example 为 .env，填写模型配置后重启。
-允许的库、表、语句与 readonly 策略在 query-policy.json。
-真实 SQL Server 配置与权限验收见 README.md。
+二、获取项目
+方式一：在 GitHub 仓库页面点击 Code → Download ZIP，下载并解压。
+方式二：已安装 Git 时，在终端运行：
+   git clone https://github.com/ztia0021-design/-_-.git ProductAnalyticsAgent
+   cd ProductAnalyticsAgent
 
-更改源代码后先执行 npm run build。
+以下命令均需在项目根目录执行，即包含 package.json、package-lock.json 和 start.bat 的文件夹。
+通过 ZIP 下载时，请打开解压后的项目文件夹，不要在压缩包内直接运行。
+
+三、安装依赖、编译并启动
+依次执行，每条命令成功后再执行下一条：
+   npm ci
+   npm run build
+   npm start
+
+命令说明：
+- npm ci：根据 package-lock.json 安装锁定版本的依赖。
+- npm run build：编译 Angular 前端和 TypeScript 后端，生成 dist 目录。
+- npm start：启动编译后的服务。
+
+看到 “Lens v2 running at http://127.0.0.1:3000” 后，在浏览器打开：
+   http://127.0.0.1:3000
+
+当前启动日志仍使用 Lens 名称，对应本项目“产品数据分析 Agent”。
+保持终端打开。按 Ctrl+C 停止服务。
+后续未修改源码时，只需运行 npm start；修改源码后应重新运行 npm run build。
+
+Windows 快捷启动：
+安装好 Node.js 后，也可以双击项目根目录中的 start.bat。
+脚本会在缺少 node_modules 时执行 npm ci，在缺少编译结果时执行 npm run build，然后启动服务。
+已有编译结果不会自动更新，修改源码后仍需手动重新编译。
+
+四、默认演示模式
+默认使用模拟电商数据和规则解析，不调用真实模型。
+查询仍会经过 SQL 安全校验，并在内存 SQLite 中执行。
+
+可以依次尝试：
+   最近 30 天新增用户趋势
+   只看移动端
+   按渠道拆分
+
+也可以新建分析后询问：
+   最近 7 天订单量是多少？
+   最近 30 天销售额趋势
+
+查看图表和结果明细后，展开查询依据，核查指标口径、时间范围、SQL 和参数。
+日期按 UTC 计算，不包含今天。连续追问需要在同一个会话中进行。
+服务重启或会话过期后，请新建分析并重新描述完整问题。
+演示数据不能用于实际经营决策。
+
+五、可选：接入真实模型，继续使用模拟数据
+1. 将项目根目录的 .env.example 复制为 .env，注意不要保存成 .env.txt。
+   Windows PowerShell：
+      Copy-Item .env.example .env
+   macOS / Linux：
+      cp .env.example .env
+2. 使用文本编辑器打开 .env，设置：
+   DATA_MODE=demo
+   LLM_BASE_URL=模型服务商提供的兼容接口基础地址
+   LLM_MODEL=实际模型名称
+   LLM_API_KEY=你的模型密钥
+3. 模型服务需兼容 Chat Completions 和工具调用。基础地址按服务商要求填写，例如以 /v1 结尾，不要重复添加 /chat/completions。
+4. 保存后停止旧服务，再运行 npm start。
+
+启用后，模型生成候选 SQL，由后端安全校验后执行，并推荐可视化方式。
+模型接口可能产生费用。密钥仅保存在本地 .env，不要上传到 GitHub。
+未配置密钥时使用规则模式；配置后调用失败会报错，不会用模拟模型响应冒充成功。
+
+六、可选：接入 SQL Server
+先阅读 README.md 中的数据库接入与权限说明。
+参考 sql/01-schema.sql、sql/02-permissions.sql 和 sql/03-verify-reader.sql，
+在目标环境准备数据表、受限读取账号并验收权限。
+随后在 .env 中配置 DATA_MODE=sqlserver、数据库连接信息及至少 24 字符的 APP_TOKEN。
+在页面连接设置中填写匹配的 APP_TOKEN。
+query-policy.json 中的允许数据库和表必须与实际配置一致。
+不要直接使用管理员或写入账号运行分析服务。真实 SQL Server 环境需单独完成集成验证。
+
+七、常见问题
+- 提示找不到 node 或 npm：确认安装 Node.js 24，并重新打开终端。
+- PowerShell 提示禁止运行 npm.ps1：可用 npm.cmd ci、npm.cmd run build、npm.cmd start，或使用命令提示符。
+- npm ci 失败：检查网络和错误信息，处理后重新执行，不要直接跳过依赖安装。
+- 提示找不到 dist/server/index.js：先运行 npm run build。
+- 提示端口被占用：关闭此前启动的项目服务，或在 .env 修改 PORT，重启后访问对应端口。
+- 浏览器无法连接：确认启动终端没有退出，且已经出现服务启动成功提示。
+- 模型或数据库报错：检查 .env 配置和终端日志，修改后重启。
+- SQL 被拦截：查看提示并调整问题。当前仅支持受限的单表 SELECT，不支持写入、跨库、JOIN 等操作。
+- OneDrive 等同步目录加载缓慢：可将项目解压到普通本地目录，再执行 npm ci 和 npm run build。
+
+八、开发与检查
+开发模式：
+   npm run dev
+前端通常访问 http://127.0.0.1:4200，后端使用 3000 端口。
+先停止已运行的生产服务，避免端口冲突。
+
+检查代码和运行测试：
+   npm run check
+   npm test
+
+GitHub 仓库仅提供源码和说明，不是已经部署的在线应用。
+127.0.0.1 只指向访问者自己的电脑，不能作为他人可访问的在线演示链接。
