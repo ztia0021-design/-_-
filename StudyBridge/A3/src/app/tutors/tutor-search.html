@@ -1,0 +1,42 @@
+<h1>Search Tutors</h1>
+
+<form [formGroup]="searchForm" (ngSubmit)="onSubmit()">
+  <label>
+    Subject
+    <select formControlName="subject">
+      <option value="">All subjects</option>
+      @for (subject of subjects(); track subject._id) {
+        <option [value]="subject.name">{{ subject.name }}</option>
+      }
+    </select>
+  </label>
+
+  <label>
+    Minimum price
+    <input type="number" step="any" formControlName="minPrice" />
+  </label>
+  <label>
+    Maximum price
+    <input type="number" step="any" formControlName="maxPrice" />
+  </label>
+  <label>
+    Minimum rating
+    <input type="number" step="any" formControlName="minRating" />
+  </label>
+  <label>
+    <input type="checkbox" formControlName="availableThisWeek" />
+    Available this week
+  </label>
+
+  <button type="submit">Search</button>
+</form>
+
+@if (errorMessage()) {
+  <p class="field-error">{{ errorMessage() }}</p>
+}
+
+@for (tutor of tutors(); track tutor.userId) {
+  <app-tutor-card [tutor]="tutor" />
+} @empty {
+  <p>No tutors found.</p>
+}

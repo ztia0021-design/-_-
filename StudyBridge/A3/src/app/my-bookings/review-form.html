@@ -1,0 +1,34 @@
+<h3>Review</h3>
+
+@if (submittedReview(); as review) {
+  <p>Rating: {{ review.rating }} / 5</p>
+  <p>{{ review.comment }}</p>
+} @else {
+  @if (errorMessage()) {
+    <p class="field-error">{{ errorMessage() }}</p>
+  }
+
+  @if (!reviewBlocked()) {
+    <form [formGroup]="reviewForm" (ngSubmit)="onSubmit()">
+      <label>
+        Rating
+        <select formControlName="rating">
+          @for (rating of [1, 2, 3, 4, 5]; track rating) {
+            <option [ngValue]="rating">{{ rating }}</option>
+          }
+        </select>
+      </label>
+      
+
+      <label>
+        Comment (optional)
+        <textarea formControlName="comment"></textarea>
+      </label>
+      @if (reviewForm.controls.comment.invalid && reviewForm.controls.comment.touched) {
+        <p class="field-error">Comment must not exceed 500 characters.</p>
+      }
+
+      <button type="submit">Submit review</button>
+    </form>
+  }
+}

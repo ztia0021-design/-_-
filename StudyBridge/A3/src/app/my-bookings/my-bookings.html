@@ -1,0 +1,28 @@
+<h1>My Bookings</h1>
+
+@if (booked() === 'true') {
+  <p>Booking requested successfully.</p>
+}
+@if (errorMessage()) {
+  <p class="field-error">{{ errorMessage() }}</p>
+}
+
+@for (booking of myBookings(); track booking._id) {
+  <article>
+    <h2>Booking {{ booking._id }}</h2>
+    <p>Tutor ID: {{ booking.tutorId }}</p>
+    <p>Subject ID: {{ booking.subjectId }}</p>
+    <p>Slot ID: {{ booking.slotId }}</p>
+    <p>Agreed rate: {{ booking.agreedRate }}</p>
+    <p>Status: {{ booking.status }}</p>
+
+    @if (booking.status === 'requested' || booking.status === 'confirmed') {
+      <button type="button" (click)="cancel(booking._id)">Cancel</button>
+    }
+    @if (booking.status === 'completed') {
+      <app-review-form [bookingId]="booking._id" />
+    }
+  </article>
+} @empty {
+  <p>No bookings yet.</p>
+}

@@ -1,0 +1,29 @@
+@if (auth.currentUser(); as user) {
+  <h1>{{ user.greeting }}</h1>
+
+  @switch (user.role) {
+    @case ('learner') {
+      <h2>My Bookings</h2>
+      @for (summary of bookingSummary(); track summary.status) {
+        <p>{{ summary.status }}: {{ summary.count }}</p>
+      }
+    }
+    @case ('tutor') {
+      <h2>My Sessions</h2>
+      @for (summary of bookingSummary(); track summary.status) {
+        <p>{{ summary.status }}: {{ summary.count }}</p>
+      }
+      <p>Open slots: {{ openSlotCount() }}</p>
+    }
+    @case ('admin') {
+      <h2>Subject Catalogue</h2>
+      <p>Total subjects: {{ subjectCount() }}</p>
+    }
+  }
+}
+
+@if (errorMessage()) {
+  <p class="field-error">{{ errorMessage() }}</p>
+}
+
+<button type="button" (click)="logout()">Logout</button>

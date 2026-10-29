@@ -1,0 +1,94 @@
+@if (errorMessage()) {
+  <p class="field-error">{{ errorMessage() }}</p>
+} @else if (tutor(); as currentTutor) {
+  <h1>{{ currentTutor.fullName }}</h1>
+  <p>{{ currentTutor.bio }}</p>
+  <p>Rate: ${{ currentTutor.hourlyRate }} per hour</p>
+
+  <h2>Subjects</h2>
+  <ul>
+    @for (subject of currentTutor.subjects; track subject) {
+      <li>{{ subject }}</li>
+    }
+  </ul>
+
+  @if (currentTutor.averageRating === null) {
+    <p>No ratings yet</p>
+  } @else {
+    <p>Rating: {{ currentTutor.averageRating }} / 5</p>
+  }
+
+  <h2>Open Slots</h2>
+  @for (slot of currentTutor.availableSlots; track slot._id) {
+    <p>{{ slot.date | date:'medium' }} · {{ slot.startTime }} · {{ slot.durationMinutes }} minutes</p>
+  } @empty {
+    <p>No open slots.</p>
+  }
+
+
+  @if (auth.currentUser()?.role === 'learner') {
+    <h2>Book a Session</h2>
+
+    @if (bookingError()) {
+      <p class="field-error">{{ bookingError() }}</p>
+    }
+    @if (lostRace()) {
+      <p>Someone just booked that slot — pick another time.</p>
+    }
+
+    <form [formGroup]="bookingForm" (ngSubmit)="onBook()">
+      <label>
+        Open slot
+        <select formControlName="slotId">
+          <option value="">Choose a slot</option>
+          @for (slot of currentTutor.availableSlots; track slot._id) {
+            <option [value]="slot._id">
+              {{ slot.date | date:'medium' }} · {{ slot.startTime }} · {{ slot.durationMinutes }} minutes
+            </option>
+          }
+        </select>
+      </label>
+      @if (bookingForm.controls.slotId.invalid && bookingForm.controls.slotId.touched) {
+        <p class="field-error">Choose an open slot.</p>
+      }
+
+      <label>
+        Subject
+        <select formControlName="subjectId">
+          <option value="">Choose a subject</option>
+          @for (subject of tutorSubjects(); track subject._id) {
+            <option [value]="subject._id">{{ subject.name }}</option>
+          }
+        </select>
+      </label>
+      @if (bookingForm.controls.subjectId.invalid && bookingForm.controls.subjectId.touched) {
+        <p class="field-error">Choose a subject.</p>
+      }
+
+      @for (slot of currentTutor.availableSlots; track slot._id) {
+        @if (slot._id === bookingForm.controls.slotId.value) {
+          <app-cost-preview
+            [agreedRate]="currentTutor.hourlyRate"
+            [durationMinutes]="slot.durationMinutes" />
+        }
+      }
+
+      <button type="submit" [disabled]="refreshingSlots() || currentTutor.availableSlots.length === 0 || tutorSubjects().length === 0">
+        Book session
+      </button>
+    </form>
+  }
+
+  <h2>Reviews</h2>
+  @for (review of currentTutor.reviews; track review._id) {
+    <article>
+      <p>Rating: {{ review.rating }} / 5</p>
+      <p>{{ review.comment }}</p>
+      <p>{{ review.createdDate | date:'mediumDate' }}</p>
+    </article>
+  } @empty {
+    <p>No reviews yet.</p>
+  }
+} @else {
+  <p>Loading…</p>
+}

@@ -1,0 +1,9 @@
+<button type="button" (click)="calculateCost()">Calculate Cost</button>
+@if (errorMessage()) {
+  <p class="field-error">{{ errorMessage() }}</p>
+}
+@if (cost(); as breakdown) {
+  <p>Subtotal: ${{ breakdown.subtotal }}</p>
+  <p>Platform Fee: ${{ breakdown.platformFee }}</p>
+  <p>Total: ${{ breakdown.total }}</p>
+}

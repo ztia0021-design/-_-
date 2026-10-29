@@ -1,0 +1,44 @@
+<h1>Register</h1>
+
+<form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+  <label>
+    Full name
+    <input formControlName="fullName" />
+  </label>
+  @if (registerForm.controls.fullName.invalid && registerForm.controls.fullName.touched) {
+    <p class="field-error">Full name is required.</p>
+  }
+
+  <label>
+    Email
+    <input type="email" formControlName="email" />
+  </label>
+  @if (registerForm.controls.email.invalid && registerForm.controls.email.touched) {
+    <p class="field-error">Enter a valid email address.</p>
+  }
+
+  <label>
+    Password
+    <input type="password" formControlName="password" />
+  </label>
+  <p>At least 8 characters, including uppercase, lowercase, a number and a special character.</p>
+  @if (registerForm.controls.password.invalid && registerForm.controls.password.touched) {
+    <p class="field-error">Password does not meet complexity requirements.</p>
+  }
+
+  <label>
+    Role
+    <select formControlName="role">
+      <option value="learner">Learner</option>
+      <option value="tutor">Tutor</option>
+    </select>
+  </label>
+
+  @if (errorMessage()) {
+    <p class="field-error">{{ errorMessage() }}</p>
+  }
+
+  <button type="submit">Register</button>
+</form>
+
+<p><a routerLink="/login">Login</a></p>

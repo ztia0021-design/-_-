@@ -1,0 +1,40 @@
+<header class="container">
+  <a routerLink="/">
+    <img
+      src="logo.png"
+      alt="logo"
+      width="40"
+      height="40"
+    />
+    StudyBridge
+  </a>
+
+  <nav class="d-flex flex-column flex-md-row gap-3">
+    @if (auth.currentUser(); as user) {
+      <a routerLink="/dashboard">Dashboard</a>
+
+      @switch (user.role) {
+        @case ('learner') {
+          <a routerLink="/tutors">Search Tutors</a>
+          <a routerLink="/my-bookings">My Bookings</a>
+        }
+        @case ('tutor') {
+          <a routerLink="/my-profile">My Profile</a>
+          <a routerLink="/my-slots">Publish a Slot</a>
+          <a routerLink="/my-sessions">My Sessions</a>
+        }
+      }
+    } @else {
+      <a routerLink="/login">Login</a>
+      <a routerLink="/register">Register</a>
+    }
+  </nav>
+</header>
+
+<main class="container">
+  <router-outlet />
+</main>
+
+<footer class="container">
+  <p>StudyBridge — Tutor discovery and session booking.</p>
+</footer>

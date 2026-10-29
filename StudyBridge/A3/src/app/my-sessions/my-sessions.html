@@ -1,0 +1,29 @@
+<h1>My Sessions</h1>
+
+@if (errorMessage()) {
+  <p class="field-error">{{ errorMessage() }}</p>
+}
+
+@for (booking of bookings(); track booking._id) {
+  <article>
+    <h2>Booking {{ booking._id }}</h2>
+    <p>Learner ID: {{ booking.learnerId }}</p>
+    <p>Subject ID: {{ booking.subjectId }}</p>
+    <p>Slot ID: {{ booking.slotId }}</p>
+    <p>Agreed rate: {{ booking.agreedRate }}</p>
+    <p>Status: {{ booking.status }}</p>
+
+    @switch (booking.status) {
+      @case ('requested') {
+        <button type="button" (click)="confirm(booking._id)">Confirm</button>
+        <button type="button" (click)="cancel(booking._id)">Cancel</button>
+      }
+      @case ('confirmed') {
+        <button type="button" (click)="complete(booking._id)">Complete</button>
+        <button type="button" (click)="cancel(booking._id)">Cancel</button>
+      }
+    }
+  </article>
+} @empty {
+  <p>No sessions yet.</p>
+}

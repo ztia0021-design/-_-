@@ -1,0 +1,42 @@
+<h1>My Profile</h1>
+
+@if (errorMessage()) {
+  <p class="field-error">{{ errorMessage() }}</p>
+}
+@if (successMessage()) {
+  <p>{{ successMessage() }}</p>
+}
+
+@if (ready()) {
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+    <label>
+      Bio
+      <textarea formControlName="bio"></textarea>
+    </label>
+    @if (profileForm.controls.bio.invalid && profileForm.controls.bio.touched) {
+      <p class="field-error">Bio must not exceed 500 characters.</p>
+    }
+
+    <label>
+      Hourly rate
+      <input type="number" step="any" formControlName="hourlyRate" />
+    </label>
+    @if (profileForm.controls.hourlyRate.invalid && profileForm.controls.hourlyRate.touched) {
+      <p class="field-error">Hourly rate must be between 5 and 200.</p>
+    }
+
+    <label>
+      Subjects
+      <select multiple formControlName="subjects">
+        @for (subject of subjects(); track subject._id) {
+          <option [value]="subject._id">{{ subject.name }}</option>
+        }
+      </select>
+    </label>
+    @if (profileForm.controls.subjects.invalid && profileForm.controls.subjects.touched) {
+      <p class="field-error">Select at least one subject.</p>
+    }
+
+    <button type="submit">{{ profileExists() ? 'Update profile' : 'Create profile' }}</button>
+  </form>
+}

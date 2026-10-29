@@ -1,0 +1,59 @@
+<h1>My Slots</h1>
+
+@if (errorMessage()) {
+  <p class="field-error">{{ errorMessage() }}</p>
+}
+@if (profileRequired()) {
+  <p><a routerLink="/my-profile">Create your tutor profile</a> before publishing slots.</p>
+}
+
+<form [formGroup]="slotForm" (ngSubmit)="onSubmit()">
+  <label>
+    Date
+    <input type="date" formControlName="date" />
+  </label>
+  @if (slotForm.controls.date.invalid && slotForm.controls.date.touched) {
+    <p class="field-error">Date is required.</p>
+  }
+
+  <label>
+    Start time
+    <input type="time" formControlName="startTime" />
+  </label>
+  @if (slotForm.controls.startTime.invalid && slotForm.controls.startTime.touched) {
+    <p class="field-error">Enter a start time in HH:MM format.</p>
+  }
+
+  <label>
+    Duration in minutes
+    <input type="number" step="any" formControlName="durationMinutes" />
+  </label>
+  @if (slotForm.controls.durationMinutes.invalid && slotForm.controls.durationMinutes.touched) {
+    <p class="field-error">Duration must be between 30 and 180 minutes.</p>
+  }
+
+  <button type="submit">Create slot</button>
+</form>
+
+<h2>Published Slots</h2>
+@for (slot of slots(); track slot._id) {
+  <article>
+    <p>{{ slot.date | date:'yyyy-MM-dd':'UTC' }} · {{ slot.startTime }} · {{ slot.durationMinutes }} minutes</p>
+    @if (slot.isBooked) {
+      <p>Booked</p>
+    } @else {
+      <p>Open</p>
+    }
+    <button type="button" [disabled]="slot.isBooked" (click)="requestDelete(slot)">Delete</button>
+  </article>
+} @empty {
+  <p>No slots published.</p>
+}
+
+<app-confirm-dialog
+  [(open)]="showConfirm"
+  title="Delete this slot?"
+  message="This action cannot be undone."
+  confirmLabel="Delete"
+  (confirmed)="onConfirmed()"
+/>
